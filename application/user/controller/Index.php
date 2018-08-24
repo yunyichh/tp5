@@ -1,6 +1,7 @@
 <?php 
 namespace app\user\controller;
 use think\Request;
+use think\View;
 use app\user\model\DisUser;
 use app\user\model\Users;
 class Index{
@@ -35,5 +36,9 @@ class Index{
                echo "request error";
           }
 
+     }
+     public function user(){
+         $view = new View();
+         return $view->fetch();
      }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace app\user\helper;
 use think\Db;
+use think\Validate;
 class UserHelper{
 
 	function isEmailExist($email){
@@ -18,4 +19,12 @@ class UserHelper{
 		$count = Db::name('users')->where('user_name',$username)->count();
 		return ($count>0)?true:false;
      }
+    static function  validateStatic(){
+    	dump(Validate::is("2018-06-29",'date'));
+    	dump(Validate::is("dshjj@qq.com",'email'));
+    	dump(Validate::in('5',['a','b']));
+    	// echo Validate::gt(10,8); // true
+    	dump(Validate::regex(100,'\d+'));
+    }
+
  }
