@@ -17,7 +17,6 @@ class Index
     public function config(){
     	$config = Config::get();
          dump($config);
-
     }
     public function request()
     {
@@ -121,7 +120,7 @@ class Index
      {
      	phpinfo();
      }
-     
+     //redis
      public function redis(){   
 
         $conf = ['host' =>Config::get('redis.host') ,'port'=>Config::get('redis.port')];
@@ -150,7 +149,6 @@ class Index
         dump($redis->sMembers('mykeys'));
         br();
         dump($redis->zRange('mykeyz',0,5));
-
  	  
      }
      
@@ -232,30 +230,118 @@ class Index
         }
         echo "<a href='$get_content'>click to return</a>";
      }
-
+       
+       //curl会话
      public function curl(){
 
-        $com = 'shentong';
-        $nu = "3371191377301";        
-        $url = "http://www.kuaidi100.com/query?type=$com&postid=$nu&id=1&valicode=&temp=".time();
+        $url = "http://www.100nld.com";
 
-        if(function_exists('curl_init')){
+        if(function_exists("curl_init")){
             $curl = curl_init();
             curl_setopt($curl,CURLOPT_URL,$url);
+            curl_setopt($curl,CURLOPT_TIMEOUT,25);
             curl_setopt($curl,CURLOPT_RETURNTRANSFER,1);
-            //解决SSL certificate problem: unable to get local issuer certificate
-            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
-            // curl_setopt($curl,  CURLOPT_FOLLOWLOCATION, 1); 
-            curl_setopt($curl, CURLOPT_USERAGENT,$_SERVER['HTTP_USER_AGENT']);
-            curl_setopt($curl, CURLOPT_TIMEOUT,15);
-            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1);    
+            curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,false);
+            curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,0);
             $result = curl_exec($curl);
+            dump(curl_error($curl));
             curl_close($curl);
+
+            //preg_match_all("/(http:\/\/)(www\.)(\w)+(\.com|\.cn)+/", $result,$results);
             dump($result);
         }
      }
+     //mysqli
+     public function mysqli(){
+        $con = mysqli_connect('localhost','root','root','bnld');
+        if(mysqli_connect_error($con)){
+            echo 'fail';
+        }else{
+            $result = mysqli_query($con,"select * from dsc_dis_user limit 5");
+            while ($row = mysqli_fetch_assoc($result)) {
+                dump($row);
+            }
+            mysqli_free_result($result);
+            mysqli_close($con);
 
+        }
+     }
+
+     //pdo
+     public function pdo(){
+         try{
+            $dbh = new \PDO("mysql:host=localhost;dbname=bnld",'root','root',[\PDO::ATTR_PERSISTENT]);
+            $result = $dbh->query("select * from dsc_dis_user limit 5");
+            foreach ($result as $key => $value) {
+                dump($value);
+            }
+         }catch(Expeciton $e){//Exception
+            echo $e->getMessage();
+         }
+     }
+     //pdo transaction
+     public function pdoTransaction(){
+           try{
+            $dbh = new \PDO("mysql:host=localhost;dbname=bnld",'root','root',[\PDO::ATTR_PERSISTENT]);
+            $dbh->setAttribute(\PDO::ATTR_ERRMODE,\PDO::ERRMODE_EXCEPTION);//setAttribute
+            $result = $dbh->query("select * from dsc_dis_user limit 5");            
+            foreach ($result as $key => $value) {
+               dump($value);
+            }
+
+           }catch(Exception $e){
+            $dbh->rollback();
+            echo $e->getMessage();
+           }
+           
+     }
+     //pdo prepare
+     public function pdoPrepare(){        
+        try{
+                $dbh = new \PDO('mysql:host=localhost;dbname=bnld','root','root');
+                $smtm = $dbh->prepare("select * from dsc_dis_user limit :num");
+                $smtm->bindParam(":num",$num);
+                $num = 5;
+                $smtm->execute();
+                $result = $smtm->fetchAll();
+                dump($result);
+            
+            }catch(Expection $e){
+                echo $e->getMessage();
+            }
+     }
+     public function date(){
+        $now = strtotime("2018-8-30 16:38");
+        $tomorrow = strtotime("+ 70 minute");
+        echo date("Y-m-d H:i:s",$now);
+        echo date("Y-m-d H:i:s",$tomorrow);
+     }
+
+     public function usualFunction(){
+        $a = '';
+        $b = 0;
+        $c = null;
+        $d = false;
+        $e = array();
+        $f = '0';
+        $array = compact('a','b','c','d','e','f');
+        $array = array_values($array);
+        while ($i = each($array)) {
+            $i = $i[1];
+            dump($i);
+            echo 'empty';dump(empty($i));br();
+            echo "is_null";dump( is_null($i));br();
+            echo "isset";dump(isset($i));br();br();br();br();
+        }
+        unset($a);
+        //echo "is_null";echo is_null($a);br();报错
+        echo "isset";dump(isset($a));br();br();br();br();br();
+
+        //结论  
+        //1.变量为null才为null才未设置，为假则为空
+        //2.unset只能用isset判断,其余报错
+
+
+     }
 
 }

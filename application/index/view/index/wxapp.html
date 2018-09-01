@@ -2,3 +2,23 @@ hello {$wxapp}
 {foreach $array as $key=>$val}
 {$val}
 {/foreach}
+<script type="text/javascript">
+	//string
+	str1 = 'hello';
+	str2 = 'wxapp';
+	str3 = str1.concat(str2);
+	console.log(str3);
+	console.log(str3.indexOf(str2));
+	console.log(str3.match(/hello/));
+    str4 = str3.replace(/hello/,"haha");
+    console.log(str4);
+    str5 = str4.slice(4);
+    console.log(str5);
+    str6 = str4.substr(4,5);
+    console.log(str6);
+    //array
+    arr1 = ['b','b','b','b','b','b'];
+    arr2 = arr1.fill("a",0,5);
+    console.log(arr2);
+
+</script>
