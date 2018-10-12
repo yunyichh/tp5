@@ -16,8 +16,12 @@ class Arrays
 		
 
 		 $array3 = array_merge($array1,$array2);
+		 echo "array3:";
+		 br();
 		 dump($array3);
 		 $array4 = array_replace($array1, $array2);
+         echo "array4:";
+         br();
 		 dump($array4);		 
 		 dump(array_combine(array_keys($array1), array_values($array2)));   
 
@@ -45,10 +49,6 @@ class Arrays
 		dump($array);
 		dump(array_rand($array1));
 		//未完待续。。。
-
-
-
-
 
 
 	}

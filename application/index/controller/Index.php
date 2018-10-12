@@ -12,7 +12,11 @@ class Index
 {
     public function index()
     {
-        return '<style type="text/css">*{ padding: 0; margin: 0; } .think_default_text{ padding: 4px 48px;} a{color:#2E5CD5;cursor: pointer;text-decoration: none} a:hover{text-decoration:underline; } body{ background: #fff; font-family: "Century Gothic","Microsoft yahei"; color: #333;font-size:18px} h1{ font-size: 100px; font-weight: normal; margin-bottom: 12px; } p{ line-height: 1.6em; font-size: 42px }</style><div style="padding: 24px 48px;"> <h1>:)</h1><p> ThinkPHP V5<br/><span style="font-size:30px">十年磨一剑 - 为API开发设计的高性能框架</span></p><span style="font-size:22px;">[ V5.0 版本由 <a href="http://www.qiniu.com" target="qiniu">七牛云</a> 独家赞助发布 ]</span></div><script type="text/javascript" src="http://tajs.qq.com/stats?sId=9347272" charset="UTF-8"></script><script type="text/javascript" src="http://ad.topthink.com/Public/static/client.js"></script><thinkad id="ad_bd568ce7058a1091"></thinkad>';
+       echo "tp5";
+    }
+    public function form(){
+        $view = new View();
+        return $view->fetch();
     }
     public function config(){
     	$config = Config::get();
@@ -29,12 +33,10 @@ class Index
     	dump($server);
     	echo $domain;br();
     	echo $pathinfo;br();
-    	echo $server['PATH'];br();
-    	echo $server['DOCUMENT_ROOT'];br();
-    	echo $server['REMOTE_ADDR'];br();
-    	echo $server['HTTP_HOST'];br();
-
-
+    	echo $server['PATH'];br();//服务器环境变量
+    	echo $server['DOCUMENT_ROOT'];br();//文档根节点
+    	echo $server['REMOTE_ADDR'];br();//远程ip地址
+    	echo $server['HTTP_HOST'];br();//请求主机域名
     }
     public function db()
     {
@@ -72,6 +74,11 @@ class Index
          $user8 = Db::name('dis_user')->limit(10)->column('is_vip','become_vip_time','user_id');
          dump($user8);
     }
+    public function db2(){
+        Db::listen(function ($sql,$time,$explain){
+
+        });
+    }
      public function transaction()
      {
      	Db::transaction(function(){
@@ -81,6 +88,11 @@ class Index
      		dump($users);
 
      	});
+     }
+     public function transaction2(){
+        Db::transaction(function(){
+
+        });
      }
      public function json()
      {
@@ -103,13 +115,13 @@ class Index
 
      }
      public function wxapp(){
-
      	$view = new View();
-        $view->assign('wxapp','wxapp');
+        $arr = ['wxapp'=>'wxapp'];
+        // $view->assign('wxapp','wxapp');
         $array = range(0,10,1);
         $array = array_pad($array, 20, 'pad_value');
         $view->assign('array',$array);
-     	return $view->fetch();
+     	return $view->fetch('wxapp',$arr);
      }
 
      public function validateStatic(){
@@ -234,20 +246,20 @@ class Index
        //curl会话
      public function curl(){
 
-        $url = "http://www.100nld.com";
+        $url = "http://www.youtube.com";
 
         if(function_exists("curl_init")){
             $curl = curl_init();
             curl_setopt($curl,CURLOPT_URL,$url);
             curl_setopt($curl,CURLOPT_TIMEOUT,25);
+            curl_setopt($curl,CURLOPT_HEADER,false);
             curl_setopt($curl,CURLOPT_RETURNTRANSFER,1);
+            //https请求不验证证书和主机
             curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,false);
             curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,0);
             $result = curl_exec($curl);
             dump(curl_error($curl));
             curl_close($curl);
-
-            //preg_match_all("/(http:\/\/)(www\.)(\w)+(\.com|\.cn)+/", $result,$results);
             dump($result);
         }
      }
@@ -288,7 +300,6 @@ class Index
             foreach ($result as $key => $value) {
                dump($value);
             }
-
            }catch(Exception $e){
             $dbh->rollback();
             echo $e->getMessage();
@@ -311,13 +322,70 @@ class Index
             }
      }
      public function date(){
-        $now = strtotime("2018-8-30 16:38");
-        $tomorrow = strtotime("+ 70 minute");
-        echo date("Y-m-d H:i:s",$now);
+        $time = strtotime("2018-8-30 16:38");
+        $now = time();
+        $tomorrow = strtotime("+ 24 hour",time());
+
+        $oneday = $tomorrow - $now;
+        echo "1 day = ".($oneday)."s";br();
+        echo "1 day = ".($oneday/60)."min";br();
+        echo "1 day = ".($oneday/60/60)."h";br();
+        $tomorrow = $now + 60*60*24;
+
+
+        $date1 = date_create(date("Y-m-d H:i:s",$now));
+        $date2 = date_create(date("Y-m-d H:i:s",$tomorrow));
+        dump(date_diff($date2,$date1));
+        echo date("Y-m-d H:i:s",$time);br();
+        echo date("Y-m-d H:i:s",$now);br();
         echo date("Y-m-d H:i:s",$tomorrow);
      }
 
-     public function usualFunction(){
+
+     public function file(){
+
+         $relativepath = "./file.txt";
+
+        //写
+         file_put_contents($relativepath,"hello file\r\n");//将字符串写入文件
+         //读1
+         $content = file_get_contents($relativepath);//读入字符串
+         dump($content);
+
+         //写2
+         $file = fopen($relativepath,'a+');//+读
+         fwrite($file,"hello file\r\n");//注意使用双引号才会编译换行
+         fwrite($file,"hello file\r\n");
+         fputs($file,"hello file\r\n");
+        //读2
+         $content = file($relativepath);//读入数组
+         dump($content);
+
+         //读取
+         rewind($file);//操作文件指针回到开始
+         $content = fread($file,filesize($relativepath));//指针中取出，会改变文件指针
+         dump($content);
+
+        //读取2--文件指针操作
+         fseek($file,0);//操作文件指针回到开始
+         while(!feof($file)){
+             echo fgetc($file).ftell($file);//文件中取出字符，会改变文件指针
+         }
+         fseek($file,0);
+         while (!feof($file)){
+             echo fgets($file).ftell($file);//文件中取出一行
+         }
+         fclose($file);
+         br();
+         echo realpath($relativepath);//不存在返回false
+         br();
+         $stat = stat($relativepath);
+         dump($stat);
+         unlink($relativepath);
+
+    }
+     //empty is_null is_set
+     public function judge(){
         $a = '';
         $b = 0;
         $c = null;
@@ -336,12 +404,19 @@ class Index
         unset($a);
         //echo "is_null";echo is_null($a);br();报错
         echo "isset";dump(isset($a));br();br();br();br();br();
-
         //结论  
         //1.变量为null才为null才未设置，为假则为空
-        //2.unset只能用isset判断,其余报错
+        //2.unset(未设置)只能用isset判断,其余报错
+     }
 
-
+     public function out(){
+        for ($i=0;$i<10;$i++){
+            $a[] = $i;
+        }
+       echo  $a[0],$a[1];br();//是语句不是函数，没有返回值，可以输出一个或者多个变量
+       print print $a[0];br();//有返回值，只能输出一个变量
+       print_r($a);br();//打印变量或者变量数组等结构数据的值，不包含类型
+       var_dump($a);//详细打印变量或者变量数组等结构数据的值，包含类型
      }
 
 }

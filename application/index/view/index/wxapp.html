@@ -20,5 +20,19 @@ hello {$wxapp}
     arr1 = ['b','b','b','b','b','b'];
     arr2 = arr1.fill("a",0,5);
     console.log(arr2);
+    //obj
+    var objtest = {
+        objadd:function (a,b) {
+            return a+b;
+
+        },
+        objsub:function (a,b) {
+            return a-b;
+        }
+    }
+    var objres = objtest.objadd(1,2);
+    console.log(objres);
+    var objres2 = objtest.objsub(2,1);
+    console.log(objres2);
 
 </script>

@@ -12,5 +12,5 @@
 // 应用公共文件
 function br($value='')
 {
-           echo "<br/>"; 
+    echo "<br/>";
 }
