@@ -116,7 +116,7 @@ class Think
         }
         if ($this->config['view_base']) {
             // 基础视图目录
-            $module = '';//isset($module) ? $module : $request->module();//好像是个bug,修改一下源码
+            $module = isset($module) ? $module : $request->module();
             $path   = $this->config['view_base'] . ($module ? $module . DS : '');
         } else {
             $path = isset($module) ? APP_PATH . $module . DS . 'view' . DS : $this->config['view_path'];
