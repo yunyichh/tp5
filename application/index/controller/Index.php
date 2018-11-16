@@ -108,7 +108,7 @@ class Index
          }
      }
      public function wxapp(){
-     	$view = new View();
+         $view = new View(Config::get('template'));
         $arr = ['wxapp'=>'wxapp'];
         // $view->assign('wxapp','wxapp');
         $array = range(0,10,1);

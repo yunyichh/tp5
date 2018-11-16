@@ -125,7 +125,7 @@ return [
          // 模板引擎类型 支持 php think 支持扩展
         'type'         => 'think',
         // 模板路径
-        'view_path'    => '',//bug  定义不起作用，以后不用定义
+        'view_path'    => '',
         // 模板后缀
         'view_suffix'  => 'html',
         // 模板文件名分隔符
@@ -139,7 +139,7 @@ return [
         // 标签库标签结束标记
         'taglib_end'   => '}',
          //视图分离  视图根所在路径 
-        'view_base'=>__DIR__.'/../template/', //入口文件在public下 ///这个有问题  应该是个bug 定义不起作用，已经修改
+        'view_base'=>__DIR__.'/../template/',
     ],
 
     // 视图输出字符串内容替换
