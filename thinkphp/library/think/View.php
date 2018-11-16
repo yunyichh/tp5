@@ -32,6 +32,7 @@ class View
      */
     public function __construct($engine = [], $replace = [])
     {
+
         // 初始化模板引擎
         $this->engine((array) $engine);
         // 基础替换字符串
@@ -118,10 +119,9 @@ class View
         if (isset($options['type'])) {
             unset($options['type']);
         }
-        $this->engine = new $class($options);
+        $this->engine = new $class($options);//默认tp/thinkphp/library/think/view/driver/Think.php
         return $this;
     }
-
     /**
      * 配置模板引擎
      * @access private

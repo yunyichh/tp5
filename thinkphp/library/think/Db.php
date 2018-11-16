@@ -135,7 +135,6 @@ class Db
             'database' => !empty($info['path']) ? ltrim($info['path'], '/') : '',
             'charset'  => isset($info['fragment']) ? $info['fragment'] : 'utf8',
         ];
-
         if (isset($info['query'])) {
             parse_str($info['query'], $dsn['params']);
         } else {
@@ -143,11 +142,10 @@ class Db
         }
         return $dsn;
     }
-
     // 调用驱动类的方法
     public static function __callStatic($method, $params)
     {
-        // 自动初始化数据库
+        // 自动初始化数据库--类名，方法名，参数
         return call_user_func_array([self::connect(), $method], $params);
     }
 }

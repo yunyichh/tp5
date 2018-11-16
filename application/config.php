@@ -123,9 +123,9 @@ return [
 
     'template'               => [
          // 模板引擎类型 支持 php think 支持扩展
-        'type'         => 'Smarty',
+        'type'         => 'think',
         // 模板路径
-        'view_path'    =>'',//bug  定义不起作用
+        'view_path'    => '',//bug  定义不起作用
         // 模板后缀
         'view_suffix'  => 'html',
         // 模板文件名分隔符

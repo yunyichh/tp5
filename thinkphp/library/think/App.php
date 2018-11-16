@@ -195,7 +195,6 @@ class App
         self::$debug && Log::record('[ RUN ] ' . $reflect->class . '->' . $reflect->name . '[ ' . $reflect->getFileName() . ' ]', 'info');
         return $reflect->invokeArgs(isset($class) ? $class : null, $args);
     }
-
     /**
      * 调用反射执行类的实例化 支持依赖注入
      * @access public

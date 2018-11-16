@@ -17,6 +17,7 @@ use think\Loader;
 use think\Log;
 use think\Request;
 use think\Template;
+use think\Config;
 
 class Think
 {
@@ -39,6 +40,7 @@ class Think
     public function __construct($config = [])
     {
         $this->config = array_merge($this->config, $config);
+
         if (empty($this->config['view_path'])) {
             $this->config['view_path'] = App::$modulePath . 'view' . DS;
         }
@@ -114,11 +116,12 @@ class Think
         }
         if ($this->config['view_base']) {
             // 基础视图目录
-            $module = isset($module) ? $module : $request->module();
+            $module = '';//isset($module) ? $module : $request->module();//好像是个bug,修改一下源码
             $path   = $this->config['view_base'] . ($module ? $module . DS : '');
         } else {
             $path = isset($module) ? APP_PATH . $module . DS . 'view' . DS : $this->config['view_path'];
         }
+
 
         $depr = $this->config['view_depr'];
         if (0 !== strpos($template, '/')) {
@@ -135,6 +138,7 @@ class Think
         } else {
             $template = str_replace(['/', ':'], $depr, substr($template, 1));
         }
+
         return $path . ltrim($template, '/') . '.' . ltrim($this->config['view_suffix'], '.');
     }
 

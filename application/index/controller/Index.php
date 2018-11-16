@@ -1,6 +1,8 @@
 <?php
 namespace app\index\controller;
 use think\Config;
+use think\Exception;
+use think\exception\PDOException;
 use think\Request;
 use think\Db;
 use think\View;
@@ -10,20 +12,22 @@ use app\user\model\DisUser;
 use app\user\helper\UserHelper;
 class Index
 {
-    public function index()
-    {
-       echo "tp5";
+    public function index(){
+       $view = new View(Config::get('template'));
+       $view->assign("index","index");
+       $view->assign("index2","index2");
+        return $view->fetch("index");
     }
     public function form(){
         $view = new View();
+        $view->assign("var","var");
         return $view->fetch();
     }
     public function config(){
     	$config = Config::get();
          dump($config);
     }
-    public function request()
-    {
+    public function request(){
     	$request = Request::instance();
     	$domain = $request->domain();
     	$pathinfo = $request->pathinfo();
@@ -74,11 +78,7 @@ class Index
          $user8 = Db::name('dis_user')->limit(10)->column('is_vip','become_vip_time','user_id');
          dump($user8);
     }
-    public function db2(){
-        Db::listen(function ($sql,$time,$explain){
 
-        });
-    }
      public function transaction()
      {
      	Db::transaction(function(){
@@ -86,19 +86,13 @@ class Index
      		dump($user1);
      		$users = Db::name('dis_user')->where('id','gt',62)->count();
      		dump($users);
-
      	});
      }
-     public function transaction2(){
-        Db::transaction(function(){
 
-        });
-     }
      public function json()
      {
      	$user1 = Db::name('dis_user')->where('id',62)->find();
      	$jsonUser = json_encode($user1);//$user1->toJson();
-
      	dump($jsonUser);
      }
      public function user()
@@ -109,10 +103,9 @@ class Index
          	dump($value->getData());
          }
          $user2 = $user->getUserById2(63);
-          foreach ($user2 as $key => $value) {
+         foreach ($user2 as $key => $value) {
          	dump($value);
-         }              
-
+         }
      }
      public function wxapp(){
      	$view = new View();
@@ -123,7 +116,6 @@ class Index
         $view->assign('array',$array);
      	return $view->fetch('wxapp',$arr);
      }
-
      public function validateStatic(){
         UserHelper::validateStatic();
      }
@@ -183,15 +175,15 @@ class Index
 
         //优先使用curl模式发送数据
         if (function_exists('curl_init') == 1){
-          $curl = curl_init();
-          curl_setopt ($curl, CURLOPT_URL, $url);
-          curl_setopt ($curl, CURLOPT_HEADER,0);
-          curl_setopt($curl, CURLOPT_ENCODING, 'gzip,deflate');
-          curl_setopt ($curl, CURLOPT_RETURNTRANSFER, 1);
-          curl_setopt ($curl, CURLOPT_USERAGENT,$_SERVER['HTTP_USER_AGENT']);
-          curl_setopt ($curl, CURLOPT_TIMEOUT,5);
-          $get_content = curl_exec($curl);
-          curl_close ($curl);
+              $curl = curl_init();
+              curl_setopt ($curl, CURLOPT_URL, $url);
+              curl_setopt ($curl, CURLOPT_HEADER,0);
+              curl_setopt ($curl, CURLOPT_ENCODING, 'gzip,deflate');
+              curl_setopt ($curl, CURLOPT_RETURNTRANSFER, 1);
+              curl_setopt ($curl, CURLOPT_USERAGENT,$_SERVER['HTTP_USER_AGENT']);
+              curl_setopt ($curl, CURLOPT_TIMEOUT,5);
+              $get_content = curl_exec($curl);
+              curl_close ($curl);
         }
         // else{
         //   include("snoopy.php");
@@ -265,25 +257,34 @@ class Index
      }
      //mysqli
      public function mysqli(){
-        $con = mysqli_connect('localhost','root','root','bnld');
-        if(mysqli_connect_error($con)){
+        $mysqli = mysqli_connect('localhost','root','root','bnld');
+        if(mysqli_connect_error($mysqli)){
             echo 'fail';
         }else{
-            $result = mysqli_query($con,"select * from dsc_dis_user limit 5");
+            $result = mysqli_query($mysqli,"select * from dsc_dis_user limit 5");
             while ($row = mysqli_fetch_assoc($result)) {
                 dump($row);
             }
             mysqli_free_result($result);
-            mysqli_close($con);
-
+            mysqli_close($mysqli);
         }
      }
-
+     //oop mysqli
+     public function mysqli2(){
+        $mysqli = new \mysqli("localhost","root","root","bnld");
+        dump($mysqli);
+        $result = $mysqli->query("select * from dsc_dis_user limit 5");
+         foreach ($result as $value){
+           dump($value);
+        }
+     }
      //pdo
      public function pdo(){
          try{
             $dbh = new \PDO("mysql:host=localhost;dbname=bnld",'root','root',[\PDO::ATTR_PERSISTENT]);
+            dump($dbh);
             $result = $dbh->query("select * from dsc_dis_user limit 5");
+            dump($result);
             foreach ($result as $key => $value) {
                 dump($value);
             }
@@ -291,20 +292,22 @@ class Index
             echo $e->getMessage();
          }
      }
+
      //pdo transaction
      public function pdoTransaction(){
            try{
             $dbh = new \PDO("mysql:host=localhost;dbname=bnld",'root','root',[\PDO::ATTR_PERSISTENT]);
             $dbh->setAttribute(\PDO::ATTR_ERRMODE,\PDO::ERRMODE_EXCEPTION);//setAttribute
-            $result = $dbh->query("select * from dsc_dis_user limit 5");            
+            $dbh->beginTransaction();
+            $result = $dbh->query("select * from dsc_dis_user limit 5");
             foreach ($result as $key => $value) {
                dump($value);
             }
+            $dbh->commit();
            }catch(Exception $e){
             $dbh->rollback();
             echo $e->getMessage();
            }
-           
      }
      //pdo prepare
      public function pdoPrepare(){        
@@ -312,7 +315,7 @@ class Index
                 $dbh = new \PDO('mysql:host=localhost;dbname=bnld','root','root');
                 $smtm = $dbh->prepare("select * from dsc_dis_user limit :num");
                 $smtm->bindParam(":num",$num);
-                $num = 5;
+                $num = 5;//变量赋值必须放在绑定参数后面
                 $smtm->execute();
                 $result = $smtm->fetchAll();
                 dump($result);
@@ -333,34 +336,32 @@ class Index
         $tomorrow = $now + 60*60*24;
 
 
-        $date1 = date_create(date("Y-m-d H:i:s",$now));
+        $date1 = date_create(date("Y-m-d H:i:s",$now));//datetime对象
         $date2 = date_create(date("Y-m-d H:i:s",$tomorrow));
-        dump(date_diff($date2,$date1));
+        dump(date_diff($date2,$date1));//dateinterval对象
         echo date("Y-m-d H:i:s",$time);br();
         echo date("Y-m-d H:i:s",$now);br();
         echo date("Y-m-d H:i:s",$tomorrow);
      }
 
-
      public function file(){
 
          $relativepath = "./file.txt";
 
-        //写
+         //写1
          file_put_contents($relativepath,"hello file\r\n");//将字符串写入文件
          //读1
          $content = file_get_contents($relativepath);//读入字符串
          dump($content);
-
-         //写2
+         //读2
+         $content = file($relativepath);//读入数组
+         dump($content);
+         //==================文件指针级操作===============
+         //写
          $file = fopen($relativepath,'a+');//+读
          fwrite($file,"hello file\r\n");//注意使用双引号才会编译换行
          fwrite($file,"hello file\r\n");
          fputs($file,"hello file\r\n");
-        //读2
-         $content = file($relativepath);//读入数组
-         dump($content);
-
          //读取
          rewind($file);//操作文件指针回到开始
          $content = fread($file,filesize($relativepath));//指针中取出，会改变文件指针
@@ -369,20 +370,20 @@ class Index
         //读取2--文件指针操作
          fseek($file,0);//操作文件指针回到开始
          while(!feof($file)){
-             echo fgetc($file).ftell($file);//文件中取出字符，会改变文件指针
+             echo fgetc($file).ftell($file);br();//文件中取出字符，会改变文件指针
          }
          fseek($file,0);
          while (!feof($file)){
-             echo fgets($file).ftell($file);//文件中取出一行
+             echo fgets($file).ftell($file);br();//文件中取出一行
          }
          fclose($file);
          br();
+         //=============================end==============
          echo realpath($relativepath);//不存在返回false
          br();
          $stat = stat($relativepath);
          dump($stat);
-         unlink($relativepath);
-
+         unlink($relativepath);//删除文件
     }
      //empty is_null is_set
      public function judge(){
@@ -418,5 +419,96 @@ class Index
        print_r($a);br();//打印变量或者变量数组等结构数据的值，不包含类型
        var_dump($a);//详细打印变量或者变量数组等结构数据的值，包含类型
      }
-
+     //simpleXML
+     public  function xml2arr(){
+        //xml2obj
+        $xmlstring = "<xml> 
+                        <appid>aaa</appid> 
+                        <attach>aa</attach> 
+                        <body>aa</body> 
+                        <mch_id>dd</mch_id> 
+                        <nonce_str>sd</nonce_str> 
+                        <notify_url>ds</notify_url> 
+                      </xml>";
+        $xml = simplexml_load_string($xmlstring);//xml2obj
+        echo "<pre>";
+        var_dump($xml);
+        var_dump($xml->mch_id);
+        //obj2arr
+        var_dump(json_decode(json_encode($xml),true));//true返回数组
+        var_dump((array)$xml);
+     }
+     //预定义常量--省略
+     //php预定义变量--数组
+     public function preArr(){
+        echo "server:";
+        dump($_SERVER);br();
+        $path = $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];br();//完整的请求，包含参数
+        dump($path);
+        echo $_SERVER['QUERY_STRING'];br();
+        echo $_SERVER['REMOTE_ADDR'];br();
+        echo $_SERVER['SCRIPT_NAME'];br();//总是访问文件--/xx.php-----路径+当前的文件名
+        echo $_SERVER['PHP_SELF'];br();//--/xx.php/xx/xx------路径+文件名+路径
+         //filesystem函数--两个
+        echo basename($_SERVER['SCRIPT_NAME'],'.php');br();//文件名部分--去后缀
+        dump(pathinfo($path));br();
+        //url处理--一个
+        //dump(parse_url($path));br();//--与实际不符,不好用
+        echo "env:";
+        dump($_ENV);br();
+        echo "session";
+        dump(isset($_SESSION)?$_SESSION:'');br();
+        echo "cookie";
+        dump($_COOKIE);br();
+        echo "file";
+        dump($_FILES);br();
+        echo 'global';
+        dump($GLOBALS);br();
+        echo 'get';
+        dump($_GET);br();
+        echo 'post';
+        dump($_POST);
+        echo 'request';
+        dump($_REQUEST);
+     }
+    //魔术变量
+    //魔术方法--省略
+     public function Magic(){
+        echo "line:".__LINE__;br();
+        echo "file:".__FILE__;br();
+        echo "dir:".__DIR__;br();
+        echo "class:".__CLASS__;br();
+        echo "method:".__METHOD__;br();
+        echo "trait:".__TRAIT__;br();
+        echo "namespace:".__NAMESPACE__;br();
+     }
+     public function url(){
+        $url = $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+        $info = pathinfo($url);
+        dump($info);
+        echo "dirname:".dirname($url);br();
+        echo "basename:".basename($url);br();
+        echo "filename:".$info['filename'];br();
+        $x = parse_url($url);
+        dump($x);
+     }
+     public function header(){
+         header('Location:http://www.jd.com/');
+         header("Content-Type:text/html;charset=utf-8");
+     }
+     //当前目录下所有文件
+     public function dir($file = "/"){
+        dump($file);
+        $dir = $file;
+        if(is_dir($dir)){
+          $resouce = opendir($dir);
+          while ($file = readdir($resouce)){
+                if(is_dir($file)){
+                    $this->dir($file);
+                }else{
+                    echo iconv("gb2312","utf-8",$file);br();
+                }
+          }
+        }
+     }
 }
